@@ -1,4 +1,13 @@
-.venv
+# Virtuelle Umgebungen
+.venv/
+venv/
+
+# Python-Cache
+__pycache__/
+*.pyc
+
+# Mediendateien (Bilder)
 *.png
+
+# Konfigurationsdaten (Optional: Nur ignorieren, wenn sie sensible Daten / lokale Setups enthalten)
 *.json
-__pycache__
