@@ -174,7 +174,7 @@ def plot_sensitivity_distribution_shift():
     print("Starte Analyse für den Verteilungs-Abstand...")
     # Da der Abstand negativ und positiv sein kann, tasten wir um die Null herum dichter ab
     # Bereich von 0 bis 10 (dicht) und 60 bis 80 (weiter gefasst)
-    shift_vals = create_dense_linspace(-30.0, 100.0, 200.0, num_low=5, num_high=5)
+    shift_vals = [-150, -100, -50, -20.0, -10.0, -5.0, 0.0, 5.0, 10.0, 20.0, 50, 100, 150]
     p1_y, p2_y, x1_y, x2_y = [], [], [], []
     counter = 0
     last_p1, last_p2 = INIT_P1, INIT_P2
@@ -207,7 +207,7 @@ def plot_sensitivity_distribution_shift():
     plt.savefig('sensitivity_distribution_shift.png', dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-    daten = {"shift": shift_vals.tolist(), "array1": p1_y, "array2": p2_y, "x1": x1_y, "x2": x2_y}
+    daten = {"shift": shift_vals, "array1": p1_y, "array2": p2_y, "x1": x1_y, "x2": x2_y}
     with open("sensitivity_distribution_shift.json", "w") as f:
         json.dump(daten, f)
         
