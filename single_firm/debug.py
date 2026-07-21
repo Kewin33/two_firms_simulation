@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from util import calc_xhat, integral
-from distribution import GaussianDistribution, UniformDistribution
-from equilibrium import calculate_equilibrium
+from single_firm.util import calc_xhat, integral
+from single_firm.distribution import GaussianDistribution, UniformDistribution
+from single_firm.equilibrium import calculate_equilibrium
 import math
 
 def plot_f(mu, cost, a, b, dist):
@@ -32,7 +32,7 @@ def plot_equilibrium_single_variable(mu, cost, n, dist, a, b):
     - dist: Distribution object.
     - a, b: Integration bounds.
     """
-    from equilibrium import calculate_equilibrium
+    from single_firm.equilibrium import calculate_equilibrium
 
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 

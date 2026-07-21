@@ -153,16 +153,14 @@ class calcPrice:
 
             objective = -(p1 + p2)
             constraint_loss = (p1 - r1)**2 + (p2 - r2)**2 + (eq4)**2 + (eq3)**2
-            total_loss = penalty_weight * constraint_loss + objective
+            total_loss = penalty_weight * constraint_loss # + objective
             
             total_loss.backward()
+
             torch.nn.utils.clip_grad_norm_([x1, x2, p1, p2], max_norm=float(self.cost))
             optimizer.step()
             scheduler.step(constraint_loss.item())
 
-            #with torch.no_grad():
-            #    x1.clamp_(self.dist1.low, self.dist1.high)
-            #    x2.clamp_(self.dist2.low, self.dist2.high)
 
             # --- Early Stopping Logik ---
             p1_round = round(p1.item(), 1)
@@ -199,15 +197,15 @@ class calcPrice:
 def main():
     #torch.distributions.Distribution.set_default_validate_args(False)
 
-    mu = 6.7
-    cost = 1000
+    mu = 0.67
+    cost = 3
     n1 = 20
     n2 = 20
     dist1 = torch.distributions.Normal(50, 50)
-    dist2 = torch.distributions.Normal(50, 50)
+    dist2 = torch.distributions.Normal(80, 50)
 
     calc_price = calcPrice(mu, cost, n1, n2, dist1, dist2)
-    result = calc_price.optimize(init_x1=dist1.sample().item(), init_x2=dist2.sample().item(), init_p1=72100, init_p2=72100, epochs=200000, lr=2)
+    result = calc_price.optimize(init_x1=dist1.sample().item(), init_x2=dist2.sample().item(), init_p1=5, init_p2=5, epochs=20000, lr=2)
 
     print("\nFinales Optimierungsergebnis:")
     print(f"p1*: {result['p1_star']:.4f}")

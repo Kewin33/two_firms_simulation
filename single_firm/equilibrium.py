@@ -1,5 +1,5 @@
-from distribution import GaussianDistribution, UniformDistribution
-from util import calc_xhat, integral
+from single_firm.distribution import GaussianDistribution, UniformDistribution
+from single_firm.util import calc_xhat, integral
 import math
 
 
@@ -27,8 +27,8 @@ def calculate_equilibrium(mu, cost, n, dist, a, b):
 
 def main():
     print("Calculating equilibrium...")
-    res = calculate_equilibrium(6.7, 1000, 40, GaussianDistribution(50, 50), -300, 350)
-    xhat = calc_xhat(6.7, 1000, -300, 350, GaussianDistribution(50, 50))
+    res = calculate_equilibrium(6.7, 1000, 40, UniformDistribution(0, 100), 0, 100)
+    xhat = calc_xhat(6.7, 1000, -300, 350, UniformDistribution(0, 100))
     print(f"Equilibrium: {res}, xhat: {xhat}")
 
 if __name__ == "__main__":

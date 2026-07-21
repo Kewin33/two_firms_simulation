@@ -8,17 +8,18 @@ from pathlib import Path
 
 n1 = 20
 n2 = 20
+mu = 6.7
 cost = 3
 dist1 = torch.distributions.Normal(50.0, 50.0)
 dist2 = torch.distributions.Normal(80.0, 50.0)
 
 
 # Read JSON
-json_path = Path(__file__).resolve().with_name("sensitivity_mu.json")
+json_path = Path(__file__).resolve().with_name("sensitivity_distribution_shift.json")
 with json_path.open("r", encoding="utf-8") as f:
     data = json.load(f)
 
-mu_vals = data["mu"]
+mu_vals = data["shift"]
 p1_y = data["array1"]
 p2_y = data["array2"]
 x1_y = data["x1"]
@@ -30,7 +31,7 @@ reward1 = []
 reward2 = []
 
 for i in range(len(mu_vals)):
-    dem1, dem2 = calculate_demand(dist1, dist2, n1, n2, mu_vals[i], x1_y[i], x2_y[i], p1_y[i], p2_y[i])
+    dem1, dem2 = calculate_demand(dist1, torch.distributions.Normal(50.0 + mu_vals[i], 50.0), n1, n2, mu, x1_y[i], x2_y[i], p1_y[i], p2_y[i])
     reward1.append(dem1 * p1_y[i])
     reward2.append(dem2 * p2_y[i])
 

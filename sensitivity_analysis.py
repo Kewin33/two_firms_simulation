@@ -24,7 +24,7 @@ INIT_P2 = 100.0
 def get_base_dists(shift=0.0):
     """Hilfsfunktion für die beiden Normal-Verteilungen."""
     dist1 = torch.distributions.Normal(50.0, 50.0)
-    dist2 = torch.distributions.Normal(80.0 + shift, 50.0)
+    dist2 = torch.distributions.Normal(50.0 + shift, 50.0)
     return dist1, dist2
 
 def create_dense_linspace(low_start, low_end, high_end, num_low=5, num_high=5):
@@ -41,7 +41,7 @@ def plot_sensitivity_mu():
     print("Starte Analyse für mu...")
     mu_vals = np.geomspace(0.013, 2, num=10)
     p1_y, p2_y, x1_y, x2_y = [], [], [], []
-    dist1, dist2 = get_base_dists()
+    dist1, dist2 = get_base_dists(30)
 
     counter = 0
     last_p1, last_p2 = INIT_P1, INIT_P2
@@ -82,12 +82,13 @@ def plot_sensitivity_mu():
 
 def plot_sensitivity_cost():
     print("Starte Analyse für cost...")
-    x = np.linspace(-np.pi / 2, np.pi / 2, num=10)
-    x = np.sin(x)
-    cost_vals = (x + 1) / 2 * 1000
+    #x = np.linspace(-np.pi / 2, np.pi / 2, num=10)
+    #x = np.sin(x)
+    #cost_vals = (x + 1) / 2 * 1000
+    cost_vals = np.linspace(0.1, 50, num=12)
 
     p1_y, p2_y, x1_y, x2_y = [], [], [], []
-    dist1, dist2 = get_base_dists()
+    dist1, dist2 = get_base_dists(30)
     counter = 0
 
     last_p1, last_p2 = INIT_P1, INIT_P2
@@ -126,12 +127,12 @@ def plot_sensitivity_cost():
     print("-> Plot gespeichert als 'sensitivity_cost.png'")
 
 
-def plot_sensitivity_market_size():
+def plot_sensitivity_market_size_n1():
     print("Starte Analyse für n1 (Marktgröße)...")
     # n1 ist diskret, hier ist kein doppelter Linspace nötig
-    n1_vals = [1, 2, 3, 4, 8, 16, 32, 64, 128, 256]
+    n1_vals = [1, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
     p1_y, p2_y, x1_y, x2_y = [], [], [], []
-    dist1, dist2 = get_base_dists()
+    dist1, dist2 = get_base_dists(30)
     counter = 0
 
     last_p1, last_p2 = INIT_P1, INIT_P2
@@ -159,22 +160,66 @@ def plot_sensitivity_market_size():
     ax.legend()
     
     plt.tight_layout()
-    plt.savefig('sensitivity_market_size.png', dpi=300, bbox_inches='tight')
+    plt.savefig('sensitivity_market_size_n1.png', dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-    daten = {"n1": n1_vals.tolist(), "array1": p1_y, "array2": p2_y, "x1": x1_y, "x2": x2_y}
-    with open("sensitivity_market_size.json", "w") as f:
+    daten = {"n1": n1_vals, "array1": p1_y, "array2": p2_y, "x1": x1_y, "x2": x2_y}
+    with open("sensitivity_market_size_n1.json", "w") as f:
         json.dump(daten, f)
 
-    print("-> Daten gespeichert als 'sensitivity_market_size.json'")
-    print("-> Plot gespeichert als 'sensitivity_market_size.png'")
+    print("-> Daten gespeichert als 'sensitivity_market_size_n1.json'")
+    print("-> Plot gespeichert als 'sensitivity_market_size_n1.png'")
+
+
+def plot_sensitivity_market_size_n2():
+    print("Starte Analyse für n2 (Marktgröße)...")
+    # n2 ist diskret, hier ist kein doppelter Linspace nötig
+    n2_vals = [1, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
+    p1_y, p2_y, x1_y, x2_y = [], [], [], []
+    dist1, dist2 = get_base_dists(30)
+    counter = 0
+
+    last_p1, last_p2 = INIT_P1, INIT_P2
+    last_x1, last_x2 = INIT_X1, INIT_X2
+    
+    for n2_val in n2_vals:
+        calc = calcPrice(BASE_MU, BASE_COST, BASE_N1, n2_val, dist1, dist2)
+        res = calc.optimize(init_x1=last_x1, init_x2=last_x2, init_p1=last_p1, init_p2=last_p2, epochs=EPOCHS, lr=LR)
+        p1_y.append(res['p1_star'])
+        p2_y.append(res['p2_star'])
+        x1_y.append(res['x1'])
+        x2_y.append(res['x2'])
+        print(f"-> Fortschritt: {counter + 1}/{len(n2_vals)} | n2={n2_val} | p1*: {res['p1_star']:.4f}, p2*: {res['p2_star']:.4f}")
+        counter += 1
+        last_p1, last_p2 = res['p1_star'], res['p2_star']
+        last_x1, last_x2 = res['x1'], res['x2']
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(n2_vals, p1_y, 'o-', label='$p_1^*$ (Player 1)')
+    ax.plot(n2_vals, p2_y, 's-', label='$p_2^*$ (Player 2)')
+    ax.set_xlabel('Number of Player 2 ($n_2$) [Base $n_1=2$]')
+    ax.set_ylabel('Equilibrium Prices')
+    ax.set_title('Price Development with Asymmetric Market Size')
+    ax.grid(True, ls="--")
+    ax.legend()
+    
+    plt.tight_layout()
+    plt.savefig('sensitivity_market_size_n2.png', dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    daten = {"n2": n2_vals, "array1": p1_y, "array2": p2_y, "x1": x1_y, "x2": x2_y}
+    with open("sensitivity_market_size_n2.json", "w") as f:
+        json.dump(daten, f)
+
+    print("-> Daten gespeichert als 'sensitivity_market_size_n2.json'")
+    print("-> Plot gespeichert als 'sensitivity_market_size_n2.png'")
 
 
 def plot_sensitivity_distribution_shift():
     print("Starte Analyse für den Verteilungs-Abstand...")
     # Da der Abstand negativ und positiv sein kann, tasten wir um die Null herum dichter ab
     # Bereich von 0 bis 10 (dicht) und 60 bis 80 (weiter gefasst)
-    shift_vals = [-150, -100, -50, -20.0, -10.0, -5.0, 0.0, 5.0, 10.0, 20.0, 50, 100, 150]
+    shift_vals = [-300, -250, -225,-210, -200, -195, -175, -150, -100, -50, -20.0, 0.0 , 20.0, 50, 100, 150, 175,195, 200, 210, 225,250, 300]
     p1_y, p2_y, x1_y, x2_y = [], [], [], []
     counter = 0
     last_p1, last_p2 = INIT_P1, INIT_P2
@@ -217,8 +262,9 @@ def plot_sensitivity_distribution_shift():
 
 if __name__ == "__main__":
     # Führt alle Analysen nacheinander aus
-    #plot_sensitivity_mu()
-    # plot_sensitivity_cost()
-    #plot_sensitivity_market_size()
-    plot_sensitivity_distribution_shift()
+    # plot_sensitivity_mu()
+    plot_sensitivity_cost()
+    #plot_sensitivity_market_size_n1()
+    #plot_sensitivity_market_size_n2()
+    #plot_sensitivity_distribution_shift()
     print("\nAlle Sensitivitätsanalysen erfolgreich abgeschlossen!")

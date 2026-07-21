@@ -1,4 +1,4 @@
-from distribution import Distribution, GaussianDistribution, UniformDistribution
+from single_firm.distribution import Distribution, GaussianDistribution, UniformDistribution
 import math
 from scipy import integrate
 
